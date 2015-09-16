@@ -2,10 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"flag"
-	"strings"
-	"encoding/json"
 
 	"./cortana"
 
@@ -14,11 +10,8 @@ import (
 
 func main() {
 	var c cortana.Config
-	s := flag.String("c", "", "configuration file for slack-cortana")
-	dec := json.NewDecoder(strings.NewReader(*s))
-	if err := dec.Decode(&c); err != nil {
-		log.Fatal(err)
-	}	
+	c.Parse()
+
 	api := slack.New(c.Token)
 	api.SetDebug(true)
 
