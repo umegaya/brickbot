@@ -11,17 +11,12 @@ import (
 func main() {
 	var c cortana.Config
 	c.Parse()
-
-	api := slack.New(c.Token)
-	api.SetDebug(true)
-
-	rtm := api.NewRTM()
-	go rtm.ManageConnection()
+	co, rev := cortana.NewClient(c)
 
 Loop:
 	for {
 		select {
-		case msg := <-rtm.IncomingEvents:
+		case msg := <-rev:
 			fmt.Print("Event Received: ")
 			switch ev := msg.Data.(type) {
 			case *slack.HelloEvent:
@@ -31,7 +26,7 @@ Loop:
 				fmt.Println("Infos:", ev.Info)
 				fmt.Println("Connection counter:", ev.ConnectionCount)
 				// Replace #general with your Channel ID
-				rtm.SendMessage(rtm.NewOutgoingMessage("Hello world", "#general"))
+				co.Message("hello world", "infra")
 
 			case *slack.MessageEvent:
 				fmt.Printf("Message: %v\n", ev)
