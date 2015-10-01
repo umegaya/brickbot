@@ -1,0 +1,4 @@
+{
+	"Applied": "new PR created at {{.url}}",
+	"Echo": "hey {{.user}}, I know your presence change to {{.state}}"
+}
