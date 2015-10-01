@@ -1,1 +1,1 @@
-docker run -d --name cortana -v $DOCKER_CERT_PATH:/docker-certs umegaya/cortana
+docker run -d --net="host" --name cortana -v $DOCKER_CERT_PATH:/docker-certs $1
