@@ -5,7 +5,7 @@
 	"docker": {
 		"server_address": "localhost",
 		"cert_path": "/docker-certs",
-		"containers": {
+		"module_containers": {
 			"patcher": {
 				"config": {
 					"Image": "your/image",

@@ -1,47 +1,47 @@
 package cortana
 
 import (
-	"log"
 	"fmt"
+	"log"
 
 	"github.com/fsouza/go-dockerclient"
 )
 
 type DockerController struct {
 	Containers map[string]*docker.Container
-	client *docker.Client
+	client     *docker.Client
 }
 
 func NewDockerController(c Config) *DockerController {
-	l := len(c.Docker.Containers) 
+	l := len(c.Docker.Containers)
 	if l <= 0 {
-		return &DockerController {
+		return &DockerController{
 			Containers: make(map[string]*docker.Container),
 		}
 	}
 	ret := make(map[string]*docker.Container, l)
 	path := c.Docker.CertPath
-    ca := fmt.Sprintf("%s/ca.pem", path)
-    cert := fmt.Sprintf("%s/cert.pem", path)
-    key := fmt.Sprintf("%s/key.pem", path)
+	ca := fmt.Sprintf("%s/ca.pem", path)
+	cert := fmt.Sprintf("%s/cert.pem", path)
+	key := fmt.Sprintf("%s/key.pem", path)
 	client, err := docker.NewTLSClient(fmt.Sprintf("tcp://%s:2376", c.Docker.ServerAddress), cert, key, ca)
 	if err != nil {
 		log.Fatal(err)
 	}
 	_, addr := c.BindAddr()
 	for name, cnf := range c.Docker.Containers {
-		rmopts := docker.RemoveContainerOptions {
-			ID: name, 
-			RemoveVolumes: true, 
-			Force: true,
+		rmopts := docker.RemoveContainerOptions{
+			ID:            name,
+			RemoveVolumes: true,
+			Force:         true,
 		}
 		if err := client.RemoveContainer(rmopts); err != nil {
 			log.Print("remove container fails:", err)
 		}
 		cnf.Config.Env = append(cnf.Config.Env, fmt.Sprintf("CORTANA_ADDR=%s", addr))
-		opts := docker.CreateContainerOptions {
-			Name: name,
-			Config: &cnf.Config, 
+		opts := docker.CreateContainerOptions{
+			Name:       name,
+			Config:     &cnf.Config,
 			HostConfig: &cnf.HostConfig,
 		}
 		ct, err := client.CreateContainer(opts)
@@ -53,9 +53,9 @@ func NewDockerController(c Config) *DockerController {
 		}
 		ret[name] = ct
 	}
-	return &DockerController {
-		Containers: ret, 
-		client: client,
+	return &DockerController{
+		Containers: ret,
+		client:     client,
 	}
 }
 

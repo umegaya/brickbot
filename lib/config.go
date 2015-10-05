@@ -1,34 +1,34 @@
 package cortana
 
 import (
-	"os"
+	"encoding/json"
+	"flag"
+	"fmt"
 	"log"
 	"net"
-	"fmt"
-	"flag"
-	"encoding/json"
+	"os"
 
 	"github.com/fsouza/go-dockerclient"
 )
 
 type ContainerConfig struct {
-	Config docker.Config 			`json:"config"`
-	HostConfig docker.HostConfig 	`json:"host_config"`
+	Config     docker.Config     `json:"config"`
+	HostConfig docker.HostConfig `json:"host_config"`
 }
 
 type DockerConfig struct {
-	ServerAddress string 					`json:"server_address"`
-	CertPath string 						`json:"cert_path"`
-	Containers map[string]ContainerConfig 	`json:"containers"`
+	ServerAddress string                     `json:"server_address"`
+	CertPath      string                     `json:"cert_path"`
+	Containers    map[string]ContainerConfig `json:"module_containers"`
 }
 
 type Config struct {
-	Token string 			`json:"token"`
-	MainChannel string 		`json:"main_channel"`
-	BindHost string 		`json:"bind_host"`
-	BindPort int 			`json:"bind_port"`
-	TemplatesPath string 	`json:"templates_path"`
-	Docker DockerConfig     `json:"docker"`
+	Token         string       `json:"token"`
+	MainChannel   string       `json:"main_channel"`
+	BindHost      string       `json:"bind_host"`
+	BindPort      int          `json:"bind_port"`
+	TemplatesPath string       `json:"templates_path"`
+	Docker        DockerConfig `json:"docker"`
 }
 
 func ifip(name string) net.IP {
@@ -36,17 +36,17 @@ func ifip(name string) net.IP {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	l, err := i.Addrs() 
+	l, err := i.Addrs()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	for _, a := range l {
-        switch v := a.(type) {
-        case *net.IPNet:
+		switch v := a.(type) {
+		case *net.IPNet:
 			return v.IP
-        case *net.IPAddr:
+		case *net.IPAddr:
 			return v.IP
-        }
+		}
 	}
 	return nil
 }
@@ -65,7 +65,7 @@ func (c *Config) check_and_fill() {
 		c.TemplatesPath = "./templates"
 	}
 	if c.Docker.CertPath == "" {
-		log.Fatal("config: docker.cert_path must be set") 
+		log.Fatal("config: docker.cert_path must be set")
 	}
 	if c.Docker.ServerAddress == "localhost" {
 		c.Docker.ServerAddress = ""
@@ -94,7 +94,7 @@ func (c *Config) check_and_fill() {
 func (c *Config) Parse() {
 	s := flag.String("c", "", "configuration file for slack-cortana")
 	flag.Parse()
-	f, err := os.Open(*s); 
+	f, err := os.Open(*s)
 	if err != nil {
 		log.Fatal(err)
 	}

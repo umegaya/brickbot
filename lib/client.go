@@ -1,28 +1,27 @@
 package cortana
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"bytes"
-	"log"
-	"encoding/json"
 	"text/template"
 
 	"github.com/nlopes/slack"
 )
 
-
 type Client struct {
-	chmap map[string]string
+	chmap     map[string]string
 	templates map[string]map[string]*template.Template
-	api *slack.Client
-	cnf Config
-	sig chan os.Signal
-	closer chan interface {}
-	dc *DockerController
-	rtm *slack.RTM
+	api       *slack.Client
+	cnf       Config
+	sig       chan os.Signal
+	closer    chan interface{}
+	dc        *DockerController
+	rtm       *slack.RTM
 }
 
 func NewClient(cnf Config) *Client {
@@ -33,14 +32,14 @@ func NewClient(cnf Config) *Client {
 	//c.api.SetDebug(true)
 	c.rtm = c.api.NewRTM()
 	c.sig = make(chan os.Signal)
-	c.closer = make(chan interface {})
+	c.closer = make(chan interface{})
 	c.chmap = make(map[string]string)
 	c.templates = make(map[string]map[string]*template.Template)
 	list, err := c.api.GetChannels(true)
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, elem := range list {	
+	for _, elem := range list {
 		fmt.Println("channels", elem.Name, elem.ID)
 		c.chmap[elem.Name] = elem.ID
 	}
@@ -72,13 +71,13 @@ func (c *Client) LoadTemplate(path, name string) {
 }
 
 func (c *Client) close_watcher() {
-	signal.Notify(c.sig, 
+	signal.Notify(c.sig,
 		syscall.SIGHUP,
 		syscall.SIGINT,
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 	go (func() {
-		sig := <- c.sig
+		sig := <-c.sig
 		c.closer <- sig
 	})()
 }
@@ -126,14 +125,14 @@ Loop:
 				txt := c.FormatMessage(name, resp.Data.Kind, resp.Data.Payload)
 				c.Message(txt, c.cnf.MainChannel)
 			}
-		case sig := <- c.closer:
+		case sig := <-c.closer:
 			log.Printf("singal recieved: %d", sig)
 			break Loop
 		}
-	}	
-}	
+	}
+}
 
-func (c *Client) FormatMessage(msg_from, msg_kind string, payload interface {}) string {
+func (c *Client) FormatMessage(msg_from, msg_kind string, payload interface{}) string {
 	entries, ok := c.templates[msg_from]
 	if !ok {
 		b, err := json.Marshal(payload)
@@ -157,9 +156,9 @@ func (c *Client) FormatMessage(msg_from, msg_kind string, payload interface {}) 
 
 //Message implements SlackClient interface
 func (c *Client) Message(text, channel string) {
-	cid, ok := c.chmap[channel]; 
-	if !ok { 
-		cid = channel 
+	cid, ok := c.chmap[channel]
+	if !ok {
+		cid = channel
 	}
 	c.rtm.SendMessage(c.rtm.NewOutgoingMessage(text, cid))
 }
