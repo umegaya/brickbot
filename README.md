@@ -1,4 +1,4 @@
-# slack-cortana
+# brickbot
 slack RTM-API frontend
 
 
@@ -11,7 +11,7 @@ ok. you are good programmer so you can well modularize your bot code and propert
 
 yes. now we have a linux container technology to solve such problem. but if we pack all bot functionality in one container, same problem (mixup code, conflict dependency) as above will happen again. even if we seperate containers for each functionality, it is boring and wasteful to setup bot connection to slack for each container. 
 
-slack-cortana solves these problem by:
+brickbot solves these problem by:
 - modularizing bot functionality by container each of them represent one functionality (called module container in this doc)
 - root container launches module container and delegate RTM event to them, so that complex bot functionality can be achieved by combine simple module containers.
 
@@ -29,7 +29,7 @@ have some interest? then proceed to "how to run".
 	"token": "your-slack-RTM-token",
 	# channel which receives bot outgoing messages
 	"main_channel": "general",
-	# slack-cortana uses --net="host", so if port is collide, change this
+	# brickbot uses --net="host", so if port is collide, change this
 	"bind_port": 8008,
 	"docker": {
 		# docker server address which child container runs
@@ -59,23 +59,23 @@ have some interest? then proceed to "how to run".
 
 2. build docker image 
 ```
-docker build -t your_account/cortana .
+docker build -t your_account/brickbot .
 ```
 
 3. run in docker
 ```
-./run.sh your_account/cortana
+./run.sh your_account/brickbot
 ```
 
 
 ### requirement for module container which is delegated RTM event
-modules are launched by cortana with environment variable "CORTANA_ADDR". 
-CORTANA_ADDR's format is address:port. such as "172.17.42.1:8008". 
+modules are launched by brickbot with environment variable "BRICKBOT_ADDR". 
+BRICKBOT_ADDR's format is address:port. such as "172.17.42.1:8008". 
 
-each module should establish persistent connection with cortana using this address.
-then cortana sends all RTM event received through this connection, with text protocol (seperated by '\n').
+each module should establish persistent connection with brickbot using this address.
+then brickbot sends all RTM event received through this connection, with text protocol (seperated by '\n').
 
-module processes such event if it should be processed, and also return some response to cortana by writing json string with \n.
+module processes such event if it should be processed, and also return some response to brickbot by writing json string with \n.
 json string format is like following: 
 ```
 {
@@ -88,7 +88,7 @@ json string format is like following:
 }
 ```
 
-if no templates are given, cortana sends these string to the channel specified in "main_channel" configuration.
+if no templates are given, brickbot sends these string to the channel specified in "main_channel" configuration.
 otherwise you can format these response by putting "template" under templates/ directory.
 for example, suppose container which name is "patcher" (see above configuration example), then you can put templates/patcher.json to format response from "patcher" module.
 patcher.json looks like this:
@@ -98,7 +98,7 @@ patcher.json looks like this:
 	"payload_type": "hi, key1's value is {{.key1}}, key2's value is {{.value2}}.",
 }
 ```
-when cortana receives above payload from patcher module, then cortana format message like this.
+when brickbot receives above payload from patcher module, then brickbot format message like this.
 ```
 hi, key1's value is value1, key2's value is value2
 ```

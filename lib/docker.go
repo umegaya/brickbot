@@ -40,7 +40,7 @@ func NewDockerController(c Config) *DockerController {
 		if err := client.RemoveContainer(rmopts); err != nil {
 			log.Print("remove container fails:", err)
 		}
-		cnf.Config.Env = append(cnf.Config.Env, fmt.Sprintf("CORTANA_ADDR=%s", addr))
+		cnf.Config.Env = append(cnf.Config.Env, fmt.Sprintf("BRICKBOT_ADDR=%s", addr))
 		opts := docker.CreateContainerOptions{
 			Name:       name,
 			Config:     &cnf.Config,

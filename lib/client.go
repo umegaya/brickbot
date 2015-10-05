@@ -62,7 +62,6 @@ func (c *Client) Initialize(dc *DockerController) *Client {
 //so you have to put *name*.json in *path* directory to load template for container which configuration name is *name*.
 func (c *Client) LoadTemplate(path, name string) {
 	fullpath := fmt.Sprintf("%s/%s.json", path, name)
-	log.Printf("fullpath:%s", fullpath)
 	f, err := os.Open(fullpath)
 	if err != nil {
 		return //ok. no template created
