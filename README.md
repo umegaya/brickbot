@@ -69,13 +69,13 @@ docker build -t your_account/brickbot .
 
 
 ### requirement for module container which is delegated RTM event
-modules are launched by brickbot with environment variable "BRICKBOT_ADDR". 
+module containers are launched by brickbot with environment variable "BRICKBOT_ADDR". 
 BRICKBOT_ADDR's format is address:port. such as "172.17.42.1:8008". 
 
-each module should establish persistent connection with brickbot using this address.
+each module container should establish persistent connection with brickbot using this address.
 then brickbot sends all RTM event received through this connection, with text protocol (seperated by '\n').
 
-module processes such event if it should be processed, and also return some response to brickbot by writing json string with \n.
+module container processes such event if it should be processed, and return some JSON response to brickbot by writing json string with \n.
 json string format is like following: 
 ```
 {
@@ -98,9 +98,15 @@ patcher.json looks like this:
 	"payload_type": "hi, key1's value is {{.key1}}, key2's value is {{.value2}}.",
 }
 ```
-when brickbot receives above payload from patcher module, then brickbot format message like this.
+when brickbot receives above payload from patcher module container, then brickbot format message like this.
 ```
 hi, key1's value is value1, key2's value is value2
 ```
 
 
+### TODO
+- messaging functionality between module container
+```
+{ "Kind": "foo", "To": "dest_module_container", "Payload": { "X": 1, "Y": 2 }}
+```
+- torelance to failure by launching multiple brickbot and stores RTMEvent to some reliable storage (cockroachDB?)
