@@ -13,6 +13,7 @@ import (
 	"github.com/nlopes/slack"
 )
 
+//Client represents running context of one slack-cortana instance
 type Client struct {
 	chmap     map[string]string
 	templates map[string]map[string]*template.Template
@@ -24,6 +25,7 @@ type Client struct {
 	rtm       *slack.RTM
 }
 
+//NewClient create and initialize Client object by Config *cnf*
 func NewClient(cnf Config) *Client {
 	var c Client
 	c.cnf = cnf
@@ -50,6 +52,9 @@ func NewClient(cnf Config) *Client {
 	return &c
 }
 
+//LoadTemplate load and store text/template object into internal map object Client.templates.
+//path and name are given from configuration. note that name is a key of module-containers configuration.
+//so you have to put *name*.json in *path* directory to load template for container which configuration name is *name*.
 func (c *Client) LoadTemplate(path, name string) {
 	fullpath := fmt.Sprintf("%s/%s.json", path, name)
 	f, err := os.Open(fullpath)
@@ -70,6 +75,7 @@ func (c *Client) LoadTemplate(path, name string) {
 	c.templates[name] = r
 }
 
+//close_watcher wait container stops, and send signal to main go routine (Client.Run)
 func (c *Client) close_watcher() {
 	signal.Notify(c.sig,
 		syscall.SIGHUP,
@@ -82,6 +88,8 @@ func (c *Client) close_watcher() {
 	})()
 }
 
+//Run is main go routine of Client object it receives RTMEvent from slack object and send it to connected client,
+//also receives message from connected client, and send it to config.MainChannel
 func (c *Client) Run(sv *Server) {
 	defer sv.Close()
 	defer c.dc.Stop()
@@ -132,6 +140,7 @@ Loop:
 	}
 }
 
+//FormatMessage formats human friendly message from payload which received from connected module-containers.
 func (c *Client) FormatMessage(msg_from, msg_kind string, payload interface{}) string {
 	entries, ok := c.templates[msg_from]
 	if !ok {

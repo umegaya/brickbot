@@ -11,17 +11,21 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+//ContainerConfig represents one container configuration.
+//it is compatible for docker remote API (through go-dockerclient)
 type ContainerConfig struct {
 	Config     docker.Config     `json:"config"`
 	HostConfig docker.HostConfig `json:"host_config"`
 }
 
+//DockerConfig represents entire docker config to create module containers
 type DockerConfig struct {
 	ServerAddress string                     `json:"server_address"`
 	CertPath      string                     `json:"cert_path"`
 	Containers    map[string]ContainerConfig `json:"module_containers"`
 }
 
+//Config represents entire configuration of slack-cortana
 type Config struct {
 	Token         string       `json:"token"`
 	MainChannel   string       `json:"main_channel"`
@@ -31,6 +35,7 @@ type Config struct {
 	Docker        DockerConfig `json:"docker"`
 }
 
+//ifip returns IP string of specified interface which name is *name*
 func ifip(name string) net.IP {
 	i, err := net.InterfaceByName(name)
 	if err != nil {
@@ -51,6 +56,8 @@ func ifip(name string) net.IP {
 	return nil
 }
 
+//check_and_fill check configuration, if configuration seems not set, 
+//it aborts or set default value
 func (c *Config) check_and_fill() {
 	if c.Token == "" {
 		log.Fatal("config: token must be set")
@@ -91,6 +98,7 @@ func (c *Config) check_and_fill() {
 	}
 }
 
+//Parse() pareses comannd line argument, and store it to newly created Config object, and return it.
 func (c *Config) Parse() {
 	s := flag.String("c", "", "configuration file for slack-cortana")
 	flag.Parse()
@@ -106,6 +114,8 @@ func (c *Config) Parse() {
 	log.Printf("network setting: %s:%d %s", c.BindHost, c.BindPort, c.Docker.ServerAddress)
 }
 
+//BindAddr returns bind address strings for net.Listen
 func (c *Config) BindAddr() (string, string) {
 	return "tcp", fmt.Sprintf("%s:%d", c.BindHost, c.BindPort)
 }
+

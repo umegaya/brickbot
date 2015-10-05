@@ -7,11 +7,13 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+//DockerController represents context of running container, started by slack-cortana.
 type DockerController struct {
 	Containers map[string]*docker.Container
 	client     *docker.Client
 }
 
+//NewDockerController creates DockerController object and initializing them by running container with given configuration.
 func NewDockerController(c Config) *DockerController {
 	l := len(c.Docker.Containers)
 	if l <= 0 {
@@ -59,6 +61,7 @@ func NewDockerController(c Config) *DockerController {
 	}
 }
 
+//Stop stops all container started by this program, its called via defer in client.Run()
 func (dc *DockerController) Stop() {
 	for _, c := range dc.Containers {
 		log.Print("kill ct", c.ID)
@@ -68,6 +71,7 @@ func (dc *DockerController) Stop() {
 	}
 }
 
+//FindContainer finds container from tcp connection address. returns nil if no container found.
 func (dc *DockerController) FindContainer(addr string) (*docker.Container, string) {
 	for name, c := range dc.Containers {
 		if c.NetworkSettings == nil {
