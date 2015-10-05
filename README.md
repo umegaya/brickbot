@@ -1,5 +1,5 @@
 # brickbot
-slack RTM-API frontend
+slack RTM-API frontend for modularizing bot functionality by using multiple container
 
 
 ### motivation
