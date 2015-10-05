@@ -110,6 +110,7 @@ func (s *Server) Send(payload interface{}) {
 //Close stops Server object by closing channel and breaks Serv() goroutine.
 func (s *Server) Close() {
 	close(s.ResponseCh)
+	s.listener.Close()
 }
 
 //handler reads record from module containers' connection, parse them, and send it to Client object's main goroutine

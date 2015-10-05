@@ -1,0 +1,8 @@
+{
+	"token": "your-slack-RTM-token",
+	"docker": {
+		"server_address": "localhost",
+		"module_containers": {
+		}
+	}
+}

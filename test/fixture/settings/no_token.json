@@ -1,0 +1,7 @@
+{
+	"main_channel": "general",
+	"docker": {
+		"module_containers": {
+		}
+	}
+}

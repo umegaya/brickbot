@@ -1,0 +1,10 @@
+{
+	"token": "your-slack-RTM-token",
+	"bind_host": "0.0.0.0",
+	"docker": {
+		"cert_path": "./docker_certs",
+		"server_address": "1.2.3.4",
+		"module_containers": {
+		}
+	}
+}
