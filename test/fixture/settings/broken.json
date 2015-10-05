@@ -1,0 +1,5 @@
+{
+	"token": "your-slack-RTM-token",
+	"main_channel": "general",
+	"bind_port": 8008,
+	"doc

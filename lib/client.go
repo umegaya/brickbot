@@ -13,6 +13,7 @@ import (
 	"github.com/nlopes/slack"
 )
 
+//Client represents running context of one slack-cortana instance
 type Client struct {
 	chmap     map[string]string
 	templates map[string]map[string]*template.Template
@@ -24,10 +25,10 @@ type Client struct {
 	rtm       *slack.RTM
 }
 
+//NewClient create and initialize Client object by Config *cnf*
 func NewClient(cnf Config) *Client {
 	var c Client
 	c.cnf = cnf
-	c.dc = NewDockerController(cnf)
 	c.api = slack.New(cnf.Token)
 	//c.api.SetDebug(true)
 	c.rtm = c.api.NewRTM()
@@ -35,6 +36,12 @@ func NewClient(cnf Config) *Client {
 	c.closer = make(chan interface{})
 	c.chmap = make(map[string]string)
 	c.templates = make(map[string]map[string]*template.Template)
+	return &c
+}
+
+//Initialize initializes Client object 
+func (c *Client) Initialize(dc *DockerController) *Client {
+	c.dc = dc
 	list, err := c.api.GetChannels(true)
 	if err != nil {
 		log.Fatal(err)
@@ -44,14 +51,18 @@ func NewClient(cnf Config) *Client {
 		c.chmap[elem.Name] = elem.ID
 	}
 	for name, _ := range c.dc.Containers {
-		c.LoadTemplate(cnf.TemplatesPath, name)
+		c.LoadTemplate(c.cnf.TemplatesPath, name)
 	}
 	go c.rtm.ManageConnection()
-	return &c
+	return c
 }
 
+//LoadTemplate load and store text/template object into internal map object Client.templates.
+//path and name are given from configuration. note that name is a key of module-containers configuration.
+//so you have to put *name*.json in *path* directory to load template for container which configuration name is *name*.
 func (c *Client) LoadTemplate(path, name string) {
 	fullpath := fmt.Sprintf("%s/%s.json", path, name)
+	log.Printf("fullpath:%s", fullpath)
 	f, err := os.Open(fullpath)
 	if err != nil {
 		return //ok. no template created
@@ -70,6 +81,12 @@ func (c *Client) LoadTemplate(path, name string) {
 	c.templates[name] = r
 }
 
+//Templates returns templates map of Client object. only for test use
+func (c *Client) Templates() map[string]map[string]*template.Template {
+	return c.templates
+}
+
+//close_watcher wait container stops, and send signal to main go routine (Client.Run)
 func (c *Client) close_watcher() {
 	signal.Notify(c.sig,
 		syscall.SIGHUP,
@@ -82,7 +99,10 @@ func (c *Client) close_watcher() {
 	})()
 }
 
-func (c *Client) Run(sv *Server) {
+//Run is main go routine of Client object it receives RTMEvent from slack object and send it to connected client,
+//also receives message from connected client, and send it to config.MainChannel
+func (c *Client) Run(sv *Server, dc *DockerController) {
+	c.Initialize(dc)
 	defer sv.Close()
 	defer c.dc.Stop()
 	c.close_watcher()
@@ -132,6 +152,7 @@ Loop:
 	}
 }
 
+//FormatMessage formats human friendly message from payload which received from connected module-containers.
 func (c *Client) FormatMessage(msg_from, msg_kind string, payload interface{}) string {
 	entries, ok := c.templates[msg_from]
 	if !ok {
