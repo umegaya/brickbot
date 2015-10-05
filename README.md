@@ -12,8 +12,8 @@ ok. you are good programmer so you can well modularize your bot code and propert
 yes. now we have a linux container technology to solve such problem. but if we pack all bot functionality in one container, same problem (mixup code, conflict dependency) as above will happen again. even if we seperate containers for each functionality, it is boring and wasteful to setup bot connection to slack for each container. 
 
 slack-cortana solves these problem by:
-- modularizing bot functionality by container which represent one functionality
-- root container launches module container and delegate RTM event to them
+- modularizing bot functionality by container each of them represent one functionality (called module container in this doc)
+- root container launches module container and delegate RTM event to them, so that complex bot functionality can be achieved by combine simple module containers.
 
 that provides
 - easier reusability of single bot functionality
@@ -23,7 +23,7 @@ have some interest? then proceed to "how to run".
 
 
 ### how to run
-1. edit settings.json.sample and rename to settings.json
+1. edit settings.json.sample and rename to settings.json (#... is comment)
 ```
 {
 	"token": "your-slack-RTM-token",
