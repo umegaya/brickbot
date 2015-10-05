@@ -1,24 +1,24 @@
 package cortana
 
 import (
-	"log"
 	"bufio"
-	"net"
-	"sync"
 	"bytes"
 	"encoding/json"
+	"log"
+	"net"
+	"sync"
 )
 
 var delim []byte = bytes.NewBufferString("\x0a").Bytes()
 
 type SVConn struct {
 	c net.Conn
-	r *bufio.Reader 
+	r *bufio.Reader
 	w *json.Encoder
 }
 
 func NewSVConn(c net.Conn) *SVConn {
-	return &SVConn {
+	return &SVConn{
 		c: c,
 		r: bufio.NewReader(c),
 		w: json.NewEncoder(c),
@@ -26,10 +26,10 @@ func NewSVConn(c net.Conn) *SVConn {
 }
 
 func (s *SVConn) Read() (string, error) {
-	return s.r.ReadString('\n')	
+	return s.r.ReadString('\n')
 }
 
-func (s *SVConn) Write(v interface {}) error {
+func (s *SVConn) Write(v interface{}) error {
 	return s.w.Encode(v)
 }
 
@@ -56,10 +56,10 @@ type Response struct {
 	Addr string
 }
 type Server struct {
-	cmap map[string]*SVConn
-	listener net.Listener
+	cmap       map[string]*SVConn
+	listener   net.Listener
 	ResponseCh chan Response
-	mtx sync.Mutex
+	mtx        sync.Mutex
 }
 
 func NewServer(cnf Config) *Server {
@@ -67,11 +67,11 @@ func NewServer(cnf Config) *Server {
 	if err != nil {
 		log.Fatal(err)
 	}
-	s := Server {
-		cmap: make(map[string]*SVConn), 
-		listener: ln,
+	s := Server{
+		cmap:       make(map[string]*SVConn),
+		listener:   ln,
 		ResponseCh: make(chan Response),
-		mtx: sync.Mutex{},
+		mtx:        sync.Mutex{},
 	}
 	return &s
 }
@@ -85,11 +85,11 @@ Loop:
 		}
 		log.Printf("accept from %s", c.RemoteAddr().String())
 		go s.handler(NewSVConn(c))
-	}	
+	}
 }
 
-func (s *Server) Send(payload interface {}) {
-	for _,c := range s.cmap {
+func (s *Server) Send(payload interface{}) {
+	for _, c := range s.cmap {
 		c.Write(payload)
 	}
 }
@@ -111,7 +111,7 @@ Loop:
 		//log.Print("handler line = ", line)
 		rec := NewRecord(line)
 		//log.Printf("rec %v", rec)
-		s.ResponseCh <- Response{ Data: rec, Addr: svc.RemoteIP().String() }
+		s.ResponseCh <- Response{Data: rec, Addr: svc.RemoteIP().String()}
 	}
 }
 

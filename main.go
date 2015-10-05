@@ -12,4 +12,3 @@ func main() {
 	cl := cortana.NewClient(c)
 	cl.Run(sv)
 }
-

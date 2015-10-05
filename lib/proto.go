@@ -1,9 +1,9 @@
 package cortana
 
 import (
+	"encoding/json"
 	"log"
 	"strings"
-	"encoding/json"
 )
 
 /*
@@ -16,8 +16,8 @@ import (
 */
 
 type Record struct {
-	Kind string `json:"Kind"`
-	Payload interface {} `json:"Payload"`
+	Kind    string      `json:"Kind"`
+	Payload interface{} `json:"Payload"`
 }
 
 func NewRecord(line string) Record {
