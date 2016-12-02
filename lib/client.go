@@ -53,6 +53,7 @@ func (c *Client) Initialize(dc *DockerController) *Client {
 	for name, _ := range c.dc.Containers {
 		c.LoadTemplate(c.cnf.TemplatesPath, name)
 	}
+	c.LoadTemplate(c.cnf.TemplatesPath, "cui")
 	go c.rtm.ManageConnection()
 	return c
 }
@@ -140,10 +141,11 @@ Loop:
 			sv.Send(msg)
 		case resp := <-sv.ResponseCh:
 			ct, name := c.dc.FindContainer(resp.Addr)
-			if ct != nil {
-				txt := c.FormatMessage(name, resp.Data.Kind, resp.Data.Payload)
-				c.Message(txt, c.cnf.MainChannel)
+			if ct == nil {
+				name = "cui" //assume that is from CUI
 			}
+			txt := c.FormatMessage(name, resp.Data.Kind, resp.Data.Payload)
+			c.Message(txt, c.cnf.MainChannel)
 		case sig := <-c.closer:
 			log.Printf("singal recieved: %d", sig)
 			break Loop
@@ -155,6 +157,7 @@ Loop:
 func (c *Client) FormatMessage(msg_from, msg_kind string, payload interface{}) string {
 	entries, ok := c.templates[msg_from]
 	if !ok {
+		log.Printf("tmpl not found %v", msg_from)
 		b, err := json.Marshal(payload)
 		if err != nil {
 			return err.Error()
@@ -163,6 +166,7 @@ func (c *Client) FormatMessage(msg_from, msg_kind string, payload interface{}) s
 	}
 	tpl, ok := entries[msg_kind]
 	if !ok {
+		log.Printf("msg_kind not found %v", msg_kind)
 		b, err := json.Marshal(payload)
 		if err != nil {
 			return err.Error()
@@ -178,6 +182,7 @@ func (c *Client) FormatMessage(msg_from, msg_kind string, payload interface{}) s
 func (c *Client) Message(text, channel string) {
 	cid, ok := c.chmap[channel]
 	if !ok {
+		log.Printf("channel not found: %v", channel)
 		cid = channel
 	}
 	c.rtm.SendMessage(c.rtm.NewOutgoingMessage(text, cid))

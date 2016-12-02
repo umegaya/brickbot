@@ -71,7 +71,7 @@ func (c *Config) check_and_fill() error {
 	if c.TemplatesPath == "" {
 		c.TemplatesPath = "./templates"
 	}
-	if c.Docker.CertPath == "" {
+	if c.Docker.CertPath == "" && len(c.Docker.Containers) > 0 {
 		return fmt.Errorf("config: docker.cert_path must be set")
 	}
 	if c.Docker.ServerAddress == "localhost" {
@@ -132,6 +132,6 @@ func (c *Config) Load(path string) error {
 
 //BindAddr returns bind address strings for net.Listen
 func (c *Config) BindAddr() (string, string) {
-	return "tcp", fmt.Sprintf("%s:%d", c.BindHost, c.BindPort)
+	return "tcp", fmt.Sprintf(":%d", c.BindPort)
 }
 
