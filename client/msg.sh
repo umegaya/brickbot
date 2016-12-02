@@ -4,6 +4,6 @@ if [ "$?" != "0" ]; then
 	exit 1
 fi
 
-cat <<Payload | nc -c $2 $3
+cat <<Payload | nc $2 $3
 {"Kind":"PlainMessage","Payload":{"message":"$1"}}
 Payload
