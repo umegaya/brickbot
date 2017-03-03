@@ -1,10 +1,7 @@
-FROM golang:1.5.1-wheezy
-RUN apt-get update
-RUN apt-get install -y supervisor
-ADD . /server
-ENV GOPATH=/go
-ENV GOARCH=amd64
-RUN go get github.com/fsouza/go-dockerclient
-RUN go get github.com/nlopes/slack
-RUN cd /server && go build -o cortana
-CMD ["/usr/bin/supervisord", "-n", "-c", "/server/supervisord.conf"]
+FROM alpine
+RUN apk add --no-cache ca-certificates
+RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+ADD brickbot brickbot
+ADD settings.json settings.json
+ADD templates templates
+CMD ["/brickbot", "-c", "settings.json"]
